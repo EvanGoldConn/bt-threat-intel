@@ -1,0 +1,28 @@
+# Configuration for all ingestion feed sources.
+# Toggle feeds on/off without touching code.
+
+feeds:
+  nvd:
+    enabled: true
+    base_url: "https://services.nvd.nist.gov/rest/json/cves/2.0"
+    lookback_days: 7
+    rate_limit_delay: 0.6
+
+  cisa_kev:
+    enabled: true
+    url: "https://www.cisa.gov/sites/default/files/feeds/known_exploited_vulnerabilities.json"
+
+  alienvault_otx:
+    enabled: true
+    base_url: "https://otx.alienvault.com/api/v1"
+    pulse_days: 7
+
+  exploitdb:
+    enabled: true
+    rss_url: "https://www.exploit-db.com/rss.xml"
+
+  github_poc:
+    enabled: true
+    search_query: "CVE poc exploit"
+    lookback_days: 3
+    max_results: 30

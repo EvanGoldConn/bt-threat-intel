@@ -1,0 +1,46 @@
+# Asset inventory for BT Threat Intel correlator.
+# Define the software, services, and OS running in your environment.
+# Copy this file to config/stack.yaml and edit before running the correlator.
+
+environment:
+  name: "home-lab"
+  description: "Local development and research environment"
+
+operating_systems:
+  - name: macOS
+    version: "14.0"
+    arch: arm64
+
+  - name: Ubuntu
+    version: "22.04"
+    arch: x86_64
+
+services:
+  - name: nginx
+    version: "1.24.0"
+    exposed: true
+    ports: [80, 443]
+
+  - name: postgresql
+    version: "16.2"
+    exposed: false
+    ports: [5432]
+
+  - name: redis
+    version: "7.2.4"
+    exposed: false
+    ports: [6379]
+
+runtimes:
+  - name: python
+    version: "3.11.9"
+
+  - name: node
+    version: "20.12.0"
+
+libraries:
+  - name: anthropic
+    version: "0.25.0"
+
+  - name: fastapi
+    version: "0.111.0"
