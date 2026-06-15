@@ -1,15 +1,15 @@
 # TODO
 
 ## Phase 1: Ingestion Pipeline
-- [ ] `nvd_feed.py` - implement `fetch()` and `normalize()`
-- [ ] `cisa_kev_feed.py` - implement `fetch()` and `normalize()`
-- [ ] `otx_feed.py` - implement `fetch()` and `normalize()`
-- [ ] `exploitdb_feed.py` - implement `fetch()` and `normalize()`
-- [ ] `github_poc_feed.py` - implement `fetch()` and `normalize()`
-- [ ] `store.py` - implement `upsert_record()`, `get_record_by_cve()`, `get_recent_records()`, `record_exists()`
-- [ ] `pipeline.py` - implement `_deduplicate()`
-- [ ] `embeddings.py` - implement `embed_text()`, `store_embedding()`, `similarity_search()`
-- [ ] End to end test: run `scripts/run_ingestion.py` and confirm records land in the database
+- [x] `nvd_feed.py` - implement `fetch()` and `normalize()`
+- [x] `cisa_kev_feed.py` - implement `fetch()` and `normalize()`
+- [x] `otx_feed.py` - implement `fetch()` and `normalize()`
+- [x] `exploitdb_feed.py` - implement `fetch()` and `normalize()`
+- [x] `github_poc_feed.py` - implement `fetch()` and `normalize()`
+- [x] `store.py` - implement `upsert_record()`, `get_record_by_cve()`, `get_recent_records()`, `record_exists()`
+- [x] `pipeline.py` - implement `_deduplicate()`
+- [x] `embeddings.py` - implement `embed_text()`, `store_embedding()`, `similarity_search()`
+- [x] End to end test: run `scripts/run_ingestion.py` and confirm records land in the database
 
 ## Phase 2: LLM Analysis
 - [ ] `analysis/triage.py` - implement `triage()`
