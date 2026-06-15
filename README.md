@@ -148,15 +148,3 @@ python scripts/run_correlator.py
 - Sigma rule suggestions per CVE
 
 ---
-
-## Disclaimer
-
-This project is built for educational and portfolio purposes. It pulls from public feeds only.
-Do not use against systems you do not own or have explicit permission to assess.
-
----
-
-## Author
-
-Built by [your name] as part of a cybersecurity career transition portfolio.
-Companion projects: network recon tool, LLM injection research.

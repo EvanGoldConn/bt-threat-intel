@@ -15,6 +15,8 @@ logger = logging.getLogger(__name__) #creates lgoger named after module [src.ing
 # NVD enforces a rate limit. Delay between requests to stay compliant.
 NVD_REQUEST_DELAY = 0.6
 
+HTTP_TIMEOUT = 30 #httpx client timeout seconds
+
 
 class NvdFeed(BaseFeed):
     """
@@ -49,7 +51,7 @@ class NvdFeed(BaseFeed):
         records: List[ThreatRecord] = []
         start_index = 0
 
-        with httpx.Client(timeout=30) as client:
+        with httpx.Client(timeout=HTTP_TIMEOUT) as client:
             while True:
                 params["startIndex"] = start_index
 

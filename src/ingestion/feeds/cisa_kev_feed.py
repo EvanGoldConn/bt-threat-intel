@@ -9,6 +9,8 @@ from src.ingestion.models import ThreatRecord
 
 logger = logging.getLogger(__name__)
 
+HTTP_TIMEOUT = 30 #httpx client timeout
+
 
 class CisaKevFeed(BaseFeed):
     """
@@ -27,7 +29,7 @@ class CisaKevFeed(BaseFeed):
         records: List[ThreatRecord] = []
 
         try:
-            with httpx.Client(timeout=30) as client:
+            with httpx.Client(timeout=HTTP_TIMEOUT) as client:
                 response = client.get(url)
                 response.raise_for_status()
         except httpx.HTTPError as e:
