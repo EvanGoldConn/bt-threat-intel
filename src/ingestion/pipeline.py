@@ -37,14 +37,43 @@ class IngestionPipeline:
                 continue
             try:
                 records = feed.fetch()
-                logger.info(f"{feed.__class__.__name__}: fetched {len(records)} records")
+                logger.info("%s: fetched %d records", feed.__class__.__name__, len(records))
                 all_records.extend(records)
             except Exception as e:
-                logger.error(f"{feed.__class__.__name__} failed: {e}")
+                logger.error("%s failed: %s", feed.__class__.__name__, e)
 
         return self._deduplicate(all_records)
 
     def _deduplicate(self, records: List[ThreatRecord]) -> List[ThreatRecord]:
-        # TODO: deduplicate by cve_id, keeping the record with the most recent modified_at
-        # Records without a cve_id (e.g. some OTX pulses) pass through as-is
-        raise NotImplementedError
+        """
+        Deduplicates records by cve_id, keeping the record with the most recent
+        modified_at. Records with no cve_id pass through without deduplication
+        since there is no reliable key to deduplicate against.
+        """
+        seen: dict = {}
+        no_cve: List[ThreatRecord] = []
+
+        for record in records:
+            if record.cve_id is None:
+                no_cve.append(record)
+                continue
+
+            existing = seen.get(record.cve_id)
+
+            if existing is None:
+                seen[record.cve_id] = record
+            else:
+                # Prefer the record with the more recent modified_at.
+                # If either record lacks modified_at, keep the existing entry.
+                if record.modified_at and existing.modified_at:
+                    if record.modified_at > existing.modified_at:
+                        seen[record.cve_id] = record
+
+        deduplicated = list(seen.values()) + no_cve
+        logger.info(
+            "Deduplication: %d records in, %d out (%d no-cve passthrough)",
+            len(records),
+            len(deduplicated),
+            len(no_cve),
+        )
+        return deduplicated

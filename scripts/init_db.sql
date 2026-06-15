@@ -23,7 +23,8 @@ CREATE TABLE IF NOT EXISTS threat_embeddings (
     id              SERIAL PRIMARY KEY,
     threat_id       INTEGER REFERENCES threat_records(id) ON DELETE CASCADE,
     embedding       vector(768),
-    embedded_at     TIMESTAMPTZ DEFAULT NOW()
+    embedded_at     TIMESTAMPTZ DEFAULT NOW(),
+    CONSTRAINT threat_embeddings_threat_id_unique UNIQUE (threat_id)
 );
 
 -- Stores TTP mapping results from LLM analysis
