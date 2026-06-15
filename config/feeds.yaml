@@ -22,6 +22,6 @@ exploitdb:
 
 github_poc:
   enabled: true
-  search_query: "CVE poc exploit"
-  lookback_days: 3
+  search_query: "CVE poc"
+  lookback_days: 7
   max_results: 30
