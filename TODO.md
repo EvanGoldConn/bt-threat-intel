@@ -12,10 +12,10 @@
 - [x] End to end test: run `scripts/run_ingestion.py` and confirm records land in the database
 
 ## Phase 2: LLM Analysis
-- [ ] `analysis/triage.py` - implement `triage()`
-- [ ] `analysis/ttp_mapper.py` - implement `map()`
-- [ ] `analysis/playbook.py` - implement `generate()`
-- [ ] End to end test: run triage and TTP mapping against a known CVE and review output
+- [x] `analysis/triage.py` - implement `triage()`
+- [x] `analysis/ttp_mapper.py` - implement `map()`
+- [x] `analysis/playbook.py` - implement `generate()`
+- [x] End to end test: run triage and TTP mapping against a known CVE and review output
 
 ## Phase 3: Asset Correlator
 - [ ] Copy `config/stack.example.yaml` to `config/stack.yaml` and fill in real environment

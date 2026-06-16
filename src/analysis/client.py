@@ -38,10 +38,12 @@ class AnalysisClient:
     def complete_json(self, system_prompt: str, user_prompt: str) -> str:
         """
         Same as complete() but appends a JSON output instruction to the system prompt.
+        Strips markdown code fences from the response before returning.
         Use when the caller expects a parseable JSON string back.
         """
         json_system = system_prompt + "\n\nRespond with valid JSON only. No explanation, no markdown."
-        return self.complete(json_system, user_prompt)
+        raw = self.complete(json_system, user_prompt)
+        return raw.strip().removeprefix("```json").removeprefix("```").removesuffix("```").strip()
 
 
 def get_analysis_client() -> AnalysisClient:
@@ -50,3 +52,4 @@ def get_analysis_client() -> AnalysisClient:
     if _instance is None:
         _instance = AnalysisClient()
     return _instance
+
