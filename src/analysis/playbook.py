@@ -36,8 +36,7 @@ class PlaybookGenerator:
         """
         user_prompt = _build_playbook_prompt(record, exposure)
         try:
-            raw = self.client.complete_json(PLAYBOOK_SYSTEM_PROMPT, user_prompt)
-            data = json.loads(raw)
+            data = self.client.complete_json(PLAYBOOK_SYSTEM_PROMPT, user_prompt)
             return IRPlaybook(
                 threat_id=exposure.threat_id,
                 cve_id=record.cve_id,
@@ -45,7 +44,7 @@ class PlaybookGenerator:
                 priority=data["priority"],
                 generated_at=datetime.now(timezone.utc),
             )
-        except (json.JSONDecodeError, KeyError): #model returns valid JSON but omits steps/priority, KeyError thrown
+        except (ValueError, KeyError): #model returns valid JSON but omits steps/priority, KeyError thrown
             logger.error("Playbook generation failed for %s", record.cve_id)
             return None
         except Exception:

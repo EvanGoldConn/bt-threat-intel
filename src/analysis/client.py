@@ -1,5 +1,6 @@
 import os
 import logging
+import json
 
 import anthropic
 
@@ -35,15 +36,20 @@ class AnalysisClient:
         )
         return response.content[0].text
 
-    def complete_json(self, system_prompt: str, user_prompt: str) -> str:
+    def complete_json(self, system_prompt: str, user_prompt: str) -> dict:
         """
         Same as complete() but appends a JSON output instruction to the system prompt.
-        Strips markdown code fences from the response before returning.
-        Use when the caller expects a parseable JSON string back.
+        Strips markdown code fences and parses the response as JSON.
+        Returns a parsed dict. Raises ValueError if the response is not valid JSON.
         """
         json_system = system_prompt + "\n\nRespond with valid JSON only. No explanation, no markdown."
         raw = self.complete(json_system, user_prompt)
-        return raw.strip().removeprefix("```json").removeprefix("```").removesuffix("```").strip()
+        cleaned = raw.strip().removeprefix("```json").removeprefix("```").removesuffix("```").strip()
+        try:
+            return json.loads(cleaned)
+        except json.JSONDecodeError as e:
+            logger.error("Failed to parse JSON response: %s\nRaw response: %s", e, cleaned)
+            raise ValueError("LLM returned invalid JSON") from e
 
 
 def get_analysis_client() -> AnalysisClient:

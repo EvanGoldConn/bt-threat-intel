@@ -38,9 +38,8 @@ class CveTriage:
         # and pass that array here as an additional exploitability signal.
         user_prompt = _build_triage_prompt(record)
         try:
-            raw = self.client.complete_json(TRIAGE_SYSTEM_PROMPT, user_prompt)
-            return json.loads(raw)
-        except json.JSONDecodeError:
+            return self.client.complete_json(TRIAGE_SYSTEM_PROMPT, user_prompt)
+        except ValueError:
             logger.error("Triage JSON parse failed for %s", record.cve_id)
             return None
         except Exception:

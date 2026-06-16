@@ -37,13 +37,12 @@ class TtpMapper:
         """
         user_prompt = _build_ttp_prompt(record)
         try:
-            raw = self.client.complete_json(TTP_SYSTEM_PROMPT, user_prompt)
-            result = json.loads(raw)
+            result = self.client.complete_json(TTP_SYSTEM_PROMPT, user_prompt)
             if not isinstance(result, list): #system prompt asks for json array, but if model returns object instead, json.loads will still succeed
                 logger.error("TTP mapper returned non-list response for %s", record.cve_id)
                 return []
             return result
-        except json.JSONDecodeError:
+        except ValueError:
             logger.error("TTP mapper JSON parse failed for %s", record.cve_id)
             return []
         except Exception:
