@@ -19,26 +19,14 @@ logger = logging.getLogger(__name__)
 
 
 def main():
+    from src.ingestion.pipeline import IngestionPipeline
+
     with open("config/feeds.yaml", "r") as f:
         feed_config = yaml.safe_load(f)
 
-    from src.ingestion.pipeline import IngestionPipeline
-    from src.ingestion.store import ThreatStore
-    from src.ingestion.embeddings import build_embedding_text, embed_text, store_embedding
-
-    pipeline = IngestionPipeline(feed_config)
-    store = ThreatStore()
-
     logger.info("Starting ingestion run")
-    records = pipeline.run()
-    logger.info("Pipeline returned %d records after deduplication", len(records))
-
-    for record in records:
-        threat_id = store.upsert_record(record)
-        if threat_id:
-            embedding = embed_text(build_embedding_text(record))
-            store_embedding(threat_id, embedding)
-
+    pipeline = IngestionPipeline(feed_config)
+    pipeline.run()
     logger.info("Ingestion run complete")
 
 
