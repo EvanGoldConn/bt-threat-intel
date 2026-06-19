@@ -26,15 +26,15 @@
 ## Phase 4: Alerting
 - [x] `alerting/alerter.py` - implement `_cli_alert()`
 - [x] `alerting/alerter.py` - implement `_slack_alert()`
-- [ ] `alerting/alerter.py` - implement `alert_high_severity()`
-- [ ] Set up Slack workspace and configure webhook URL in `.env`
-- [ ] End to end test: confirm Slack alert fires with real webhook
+- [x] `alerting/alerter.py` - implement `alert_high_severity()`
+- [x] Set up Slack workspace and configure webhook URL in `.env`
+- [x] End to end test: confirm Slack alert fires with real webhook
 
 ## Phase 5: Analyst Chat Interface
-- [ ] `chat/pipeline.py` - implement `_format_context()`
-- [ ] `chat/pipeline.py` - implement `query()` with XML delimiter wrapping on retrieved chunks (RAG poisoning defense)
-- [ ] `ui/app.py` - test Streamlit UI end to end
-- [ ] End to end test: ask a question about a known ingested CVE and verify grounded response
+- [x] `chat/pipeline.py` - implement `_format_context()`
+- [x] `chat/pipeline.py` - implement `query()` with XML delimiter wrapping on retrieved chunks (RAG poisoning defense)
+- [x] `ui/app.py` - test Streamlit UI end to end
+- [x] End to end test: ask a question about a known ingested CVE and verify grounded response
 
 ## Phase 6: API Layer
 - [ ] `api/routes/threats.py` - endpoints for querying threat records
@@ -87,3 +87,11 @@
 - [ ] Audit all external data paths for prompt injection surface area
 - [ ] Add rate limiting to FastAPI endpoints
 - [ ] Add API key auth to FastAPI endpoints before any external exposure
+
+CHAT PIPELINE
+- [ ] Increase TOP_K_RESULTS (currently 5) and evaluate whether broader retrieval improves answer relevance
+- [ ] Hybrid retrieval mode: combine similarity search with SQL filters on severity and published_at
+  for temporal queries ("most recent", "this week", etc.)
+- [ ] Embedding-time content screening for instruction-like patterns in ingested descriptions
+- [ ] Log retrieved chunks alongside each query for retrieval observability
+- [ ] Output validation pass to detect anomalous LLM responses

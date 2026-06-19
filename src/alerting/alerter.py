@@ -110,10 +110,53 @@ class Alerter:
         text = Text()
         text.append(f"CVE: {cve_id}\n", style="bold white")
         text.append(f"Severity: {severity}  CVSS: {cvss}  Priority: {priority}\n", style="bold red")
-        text.append(f"Summary: {triage.get('summary', 'N/A')}", style="white")
+        text.append(f"Summary: {triage.get('summary', 'N/A')}\n", style="white")
+        text.append(f"Rationale: {triage.get('rationale', 'N/A')}", style="white")
 
         console.print(Panel(
             text,
             title="[bold yellow]HIGH SEVERITY ALERT[/bold yellow]",
             border_style="yellow",
         ))
+
+        if SLACK_WEBHOOK_URL:
+            payload = {
+                "blocks": [
+                    {
+                        "type": "header",
+                        "text": {
+                            "type": "plain_text",
+                            "text": "HIGH SEVERITY CVE DETECTED",
+                        }
+                    },
+                    {
+                        "type": "section",
+                        "fields": [
+                            {"type": "mrkdwn", "text": f"*CVE:*\n{cve_id}"},
+                            {"type": "mrkdwn", "text": f"*Severity:*\n{severity} ({cvss})"},
+                            {"type": "mrkdwn", "text": f"*Priority:*\n{priority}"},
+                            {"type": "mrkdwn", "text": f"*Source:*\n{record.source}"},
+                        ]
+                    },
+                    {
+                        "type": "section",
+                        "text": {
+                            "type": "mrkdwn",
+                            "text": f"*Summary:*\n{triage.get('summary', 'N/A')}"
+                        }
+                    },
+                ]
+            }
+
+            try:
+                with httpx.Client(timeout=HTTP_TIMEOUT) as client:
+                    resp = client.post(SLACK_WEBHOOK_URL, json=payload)
+                    if resp.status_code != 200:
+                        logger.warning(
+                            "Slack high severity alert failed for %s: status %d, body %s",
+                            cve_id,
+                            resp.status_code,
+                            resp.text,
+                        )
+            except httpx.HTTPError as e:
+                logger.warning("Slack high severity alert HTTP error for %s: %s", cve_id, e)
