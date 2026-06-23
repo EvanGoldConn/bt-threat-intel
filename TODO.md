@@ -36,18 +36,11 @@
 - [x] `ui/app.py` - test Streamlit UI end to end
 - [x] End to end test: ask a question about a known ingested CVE and verify grounded response
 
-## Phase 6: API Layer
-- [ ] `api/routes/threats.py` - endpoints for querying threat records
-- [ ] `api/routes/chat.py` - endpoint for analyst chat queries
-- [ ] `api/routes/alerts.py` - endpoint for triggering manual alerts
-- [ ] Wire routes into `api/main.py`
-- [ ] End to end test: hit all endpoints and confirm correct responses
-
-## Phase 7: Scheduler
+## Phase 6: Scheduler
 - [ ] `scripts/scheduler.py` - wire in `run_ingestion` and `run_correlator` jobs
 - [ ] Test scheduled runs at configured interval
 
-## Phase 8: Polish
+## Phase 7: Polish
 - [ ] Add unit tests for feed normalization
 - [ ] Add unit tests for correlator matching logic
 - [ ] Add integration test for full ingestion to alert pipeline
@@ -83,6 +76,14 @@
 - [ ] Conversation history support in `ChatPipeline` for multi-turn analyst sessions
 - [ ] Expose exposure and playbook data to the chat interface so analysts can query confirmed exposures
 
+### API Layer (future)
+- [ ] `api/routes/threats.py` - GET /threats with severity and date filters
+- [ ] `api/routes/chat.py` - POST /chat endpoint wrapping ChatPipeline.query()
+- [ ] `api/routes/alerts.py` - POST /correlate to trigger a manual correlation run, GET /exposures to return confirmed exposures
+- [ ] Wire routes into `api/main.py`
+- [ ] Add API key auth before any external exposure
+- [ ] Add rate limiting to all endpoints
+
 ### Security Hardening
 - [ ] Audit all external data paths for prompt injection surface area
 - [ ] Add rate limiting to FastAPI endpoints
@@ -95,3 +96,9 @@ CHAT PIPELINE
 - [ ] Embedding-time content screening for instruction-like patterns in ingested descriptions
 - [ ] Log retrieved chunks alongside each query for retrieval observability
 - [ ] Output validation pass to detect anomalous LLM responses
+
+## Correlator Improvements
+- Add ASSET_ALIASES map to correlator.py for Stage 1 keyword matching.
+  Current matching is too literal — misses "PostgreSQL" vs "postgresql",
+  "GitHub Actions" vs "github-actions", "React.js" vs "react", etc.
+  Implement alias lookup in _extract_candidates() before keyword fallback.

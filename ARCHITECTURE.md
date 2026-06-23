@@ -333,13 +333,16 @@ CVE_LOOKBACK_DAYS         default: 7
 - LLM playbook generation (PlaybookGenerator)
 - Automated analysis on new records in ingestion pipeline
 - Asset correlator with two-stage CPE/keyword + LLM matching
-- CLI and Slack alerting on confirmed exposures
+- CLI and Slack alerting on confirmed exposures (alert_exposure, alert_high_severity)
 - Manual scripts: run_ingestion.py, run_analysis.py, run_correlator.py
+- RAG chat pipeline (src/chat/pipeline.py) with XML delimiter RAG poisoning defense
+- Streamlit analyst chat UI (ui/app.py)
 
 ### Not yet built
-- alert_high_severity() in alerter.py
-- Slack webhook configured in .env
-- RAG chat pipeline (src/chat/pipeline.py)
-- Streamlit UI (ui/app.py)
-- FastAPI endpoints (src/api/main.py)
 - Scheduler (scripts/scheduler.py)
+
+### Possible future additions
+- REST API layer (FastAPI): GET /threats, POST /chat, GET /exposures, POST /correlate
+- Dependency scanner to auto-populate stack.yaml
+- Hybrid retrieval in chat pipeline for temporal queries
+- Conversation history in chat UI

@@ -20,7 +20,7 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-CORRELATOR_LIMIT = 200 #caps how many records to correlate per run
+CORRELATOR_LIMIT = 500 #caps how many records to correlate per run
 
 
 def row_to_threat_record(row: dict):

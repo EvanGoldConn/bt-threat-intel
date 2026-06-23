@@ -15,7 +15,7 @@ does not contain enough information to answer, say so clearly.
 Be concise and technical. Reference specific CVE IDs when relevant.
 """
 
-TOP_K_RESULTS = 5
+TOP_K_RESULTS = 15
 
 
 def _sanitize_query(text: str) -> str:

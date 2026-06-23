@@ -37,7 +37,7 @@ Analyst interface   ->  Streamlit chat UI backed by RAG pipeline
 
 | Layer | Tool |
 |---|---|
-| Language | Python 3.11 |
+| Language | Python 3.13 |
 | LLM (reasoning) | Claude claude-sonnet-4-6 via Anthropic API |
 | Embeddings | nomic-embed-text via Ollama (local) |
 | Vector store | pgvector (PostgreSQL extension) |
@@ -95,9 +95,9 @@ bt-threat-intel/
 git clone https://github.com/yourusername/bt-threat-intel.git
 cd bt-threat-intel
 
-# Create and activate virtual environment on external drive
-python3 -m venv /Volumes/UTM_DRIVE/bt-threat-intel-venv
-source /Volumes/UTM_DRIVE/bt-threat-intel-venv/bin/activate
+# Create and activate virtual environment
+python3 -m venv venv
+source venv/bin/activate
 
 # Install dependencies
 pip install -r requirements.txt
@@ -140,11 +140,13 @@ python scripts/run_correlator.py
 
 ---
 
-## Planned
+## Possible future additions
 
-- SOAR-style alert output formatting
+- REST API layer (FastAPI): expose threat queries, chat, and correlation triggers as HTTP endpoints
+- Dependency scanner: auto-populate stack.yaml from requirements.txt, package.json, go.mod
+- Hybrid retrieval in chat pipeline: combine semantic search with SQL filters for temporal queries
+- Conversation history in chat UI for multi-turn analyst sessions
+- Sigma rule suggestions per confirmed CVE exposure
 - Live network scan integration (from separate recon project)
-- Expanded IR playbook generation
-- Sigma rule suggestions per CVE
 
 ---
