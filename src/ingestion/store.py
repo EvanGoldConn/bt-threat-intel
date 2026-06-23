@@ -7,7 +7,7 @@ from typing import List, Optional
 import psycopg2
 from psycopg2.extras import Json, RealDictCursor
 
-from src.ingestion.models import ThreatRecord
+from src.ingestion.models import ThreatRecord, ExposureResult
 
 logger = logging.getLogger(__name__)
 
@@ -259,4 +259,112 @@ class ThreatStore:
                     return True
         except psycopg2.Error as e:
             logger.error("Failed to save TTP mappings for threat_id %s: %s", threat_id, e)
+            return False
+    def get_confirmed_exposures(self, asset_name: Optional[str] = None) -> List[dict]:
+        """
+        Fetches confirmed exposures joined to their threat records.
+        Returns full threat record fields plus asset_name, asset_version,
+        and rationale from exposure_results.
+        Ordered by cvss_score descending so highest risk appears first.
+        Optionally filters to a specific asset name.
+        """
+        if asset_name:
+            sql = """
+                SELECT t.*, e.asset_name, e.asset_version, e.rationale,
+                       e.assessed_at, e.is_exposed
+                FROM threat_records t
+                JOIN exposure_results e ON e.threat_id = t.id
+                WHERE e.is_exposed = TRUE
+                AND LOWER(e.asset_name) = LOWER(%s)
+                ORDER BY t.cvss_score DESC NULLS LAST
+            """
+            params = (asset_name,)
+        else:
+            sql = """
+                SELECT t.*, e.asset_name, e.asset_version, e.rationale,
+                       e.assessed_at, e.is_exposed
+                FROM threat_records t
+                JOIN exposure_results e ON e.threat_id = t.id
+                WHERE e.is_exposed = TRUE
+                ORDER BY t.cvss_score DESC NULLS LAST
+            """
+            params = None
+
+        try:
+            with get_connection() as conn:
+                with conn.cursor(cursor_factory=RealDictCursor) as cur:
+                    cur.execute(sql, params)
+                    return [dict(row) for row in cur.fetchall()]
+        except psycopg2.Error as e:
+            logger.error("Failed to fetch confirmed exposures: %s", e)
+            return []
+        
+    def save_exposure(self, exposure: ExposureResult) -> bool:
+        """
+        Writes a confirmed ExposureResult to the exposure_results table.
+        Uses ON CONFLICT DO NOTHING to avoid duplicates on re-runs.
+        Returns True on success, False on failure.
+        """
+        sql = """
+            INSERT INTO exposure_results (threat_id, asset_name, asset_version, is_exposed, rationale)
+            VALUES (%s, %s, %s, %s, %s)
+            ON CONFLICT DO NOTHING
+        """
+        try:
+            with get_connection() as conn:
+                with conn.cursor() as cur:
+                    cur.execute(sql, (
+                        exposure.threat_id,
+                        exposure.asset_name,
+                        exposure.asset_version,
+                        exposure.is_exposed,
+                        exposure.rationale,
+                    ))
+                return True
+        except psycopg2.Error as e:
+            logger.error("Failed to save exposure for threat_id %s: %s", exposure.threat_id, e)
+            return False
+    def get_uncorrelated_records(self) -> List[dict]:
+        """
+        Fetches threat records that have not yet been through the correlator.
+        Filters to records with cve_id, description, and critical or high severity.
+        Ordered by cvss_score descending.
+        Only returns records where correlated_at IS NULL.
+        """
+        sql = """
+            SELECT * FROM threat_records
+            WHERE cve_id IS NOT NULL
+            AND description IS NOT NULL
+            AND severity IN ('critical', 'high')
+            AND correlated_at IS NULL
+            ORDER BY cvss_score DESC NULLS LAST
+        """
+        try:
+            with get_connection() as conn:
+                with conn.cursor(cursor_factory=RealDictCursor) as cur:
+                    cur.execute(sql)
+                    return [dict(row) for row in cur.fetchall()]
+        except psycopg2.Error as e:
+            logger.error("Failed to fetch uncorrelated records: %s", e)
+            return []
+
+    def mark_correlated(self, threat_id: int) -> bool:
+        """
+        Sets correlated_at to the current timestamp for a given threat_id.
+        Called after the correlator has processed a record regardless of
+        whether a confirmed exposure was found.
+        Returns True on success, False on failure.
+        """
+        sql = """
+            UPDATE threat_records
+            SET correlated_at = NOW()
+            WHERE id = %s
+        """
+        try:
+            with get_connection() as conn:
+                with conn.cursor() as cur:
+                    cur.execute(sql, (threat_id,))
+            return True
+        except psycopg2.Error as e:
+            logger.error("Failed to mark threat_id %s as correlated: %s", threat_id, e)
             return False

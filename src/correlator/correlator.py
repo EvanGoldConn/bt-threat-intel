@@ -1,16 +1,20 @@
 import re
-import yaml
 import logging
 from typing import List, Optional
 
+from src.ingestion.assets import get_all_assets, get_all_search_terms
 from src.ingestion.models import ThreatRecord, ExposureResult
 from src.analysis.client import get_analysis_client
 
 logger = logging.getLogger(__name__)
 
 DEFAULT_STACK_PATH = "config/stack.yaml"
-SKIP_KEYS = {"environment"}
 CPE_REGEX = re.compile(r"cpe:2\.3:[aho]:[^:]+:([^:]+):([^:]+):")
+
+# Minimum character length for a keyword term used in description matching
+# during the keyword fallback stage. Short terms like 'git', 'pip', 'npm'
+# produce too many false candidate matches against unrelated descriptions.
+MIN_KEYWORD_TERM_LENGTH = 4
 
 
 class AssetCorrelator:
@@ -18,31 +22,19 @@ class AssetCorrelator:
     Loads the asset inventory from stack.yaml and cross-references it
     against incoming ThreatRecords to identify confirmed exposures.
     Uses CPE data from raw_data where available, falls back to keyword
-    matching against the description field.
+    matching against the description field using aliases from assets.py.
     """
 
     def __init__(self, stack_path: str = DEFAULT_STACK_PATH):
-        self.stack = self._load_stack(stack_path)
+        self.stack_path = stack_path
         self.client = get_analysis_client()
-
-    def _load_stack(self, path: str) -> dict:
-        """Load and return the asset inventory from a YAML file."""
-        with open(path, "r") as f:
-            return yaml.safe_load(f)
 
     def get_all_assets(self) -> List[dict]:
         """
-        Flatten all asset categories from the loaded stack into a single list.
-        Each asset dict gets a 'category' key added to preserve its origin.
-        Non-list keys and keys in SKIP_KEYS are ignored.
+        Flatten all asset categories from stack.yaml into a single list.
+        Delegates to the shared assets module.
         """
-        assets = []
-        for category, items in self.stack.items():
-            if category in SKIP_KEYS or not isinstance(items, list):
-                continue
-            for asset in items:
-                assets.append({**asset, "category": category})#spreads existing asset dict & adds category w/o mutating original, nginx entry kees all of the stuff it had
-        return assets
+        return get_all_assets(self.stack_path)
 
     def _extract_cpe_names(self, record: ThreatRecord) -> List[tuple]:
         """
@@ -74,24 +66,30 @@ class AssetCorrelator:
     def _extract_candidates(self, record: ThreatRecord, assets: List[dict]) -> List[dict]:
         """
         Filter assets to those plausibly affected by the given ThreatRecord.
-        Uses CPE vendor/product names if available, falls back to description
-        keyword matching. Returns a list of candidate asset dicts.
+        Uses CPE vendor/product names if available, falls back to alias-aware
+        keyword matching against the description field.
+        Returns a list of candidate asset dicts.
         """
         cpe_names = self._extract_cpe_names(record)
+        search_terms = get_all_search_terms(self.stack_path, use_llm=True)
         candidates = []
 
         for asset in assets:
             asset_name = asset["name"].lower()
+            terms = search_terms.get(asset_name, [asset_name])
 
             if cpe_names:
                 if any(
-                    asset_name in cpe_vendor or asset_name in cpe_product
+                    any(term in cpe_vendor or term in cpe_product for term in terms)
                     for cpe_vendor, cpe_product in cpe_names
                 ):
                     candidates.append(asset)
             else:
                 description = (record.description or "").lower()
-                if asset_name in description:
+                if any(
+                    len(term) >= MIN_KEYWORD_TERM_LENGTH and term in description
+                    for term in terms
+                ):
                     candidates.append(asset)
 
         return candidates
@@ -113,23 +111,26 @@ class AssetCorrelator:
         )
 
         user_prompt = (
-            f"<cve_data>\n" #XML Wrapping
+            f"<cve_data>\n"
             f"CVE ID: {record.cve_id}\n"
             f"Description: {record.description}\n"
             f"CVSS Score: {record.cvss_score}\n"
             f"Severity: {record.severity}\n"
-            f"</cve_data>\n\n" #XML Wrapping
-            f"<asset_data>\n" #XML Wrapping
+            f"</cve_data>\n\n"
+            f"<asset_data>\n"
             f"Name: {asset['name']}\n"
             f"Version: {asset.get('version', 'unknown')}\n"
             f"Category: {asset['category']}\n"
-            f"</asset_data>\n\n" #XML Wrapping
+            f"</asset_data>\n\n"
             f"Is this asset affected by this CVE?"
         )
 
         try:
             result = self.client.complete_json(system_prompt, user_prompt)
-            logger.debug("LLM confirmation result for %s / %s: %s", record.cve_id, asset["name"], result)
+            logger.debug(
+                "LLM confirmation result for %s / %s: %s",
+                record.cve_id, asset["name"], result
+            )
             return ExposureResult(
                 threat_id=0,
                 asset_name=asset["name"],
@@ -138,7 +139,10 @@ class AssetCorrelator:
                 rationale=result.get("rationale", ""),
             )
         except (KeyError, ValueError) as e:
-            logger.error("LLM confirmation failed for %s / %s: %s", record.cve_id, asset["name"], e)
+            logger.error(
+                "LLM confirmation failed for %s / %s: %s",
+                record.cve_id, asset["name"], e
+            )
             return None
 
     def correlate(self, record: ThreatRecord, threat_id: int) -> List[ExposureResult]:

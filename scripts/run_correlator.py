@@ -71,6 +71,7 @@ def main():
                 continue
 
             total_exposures += 1
+            store.save_exposure(exposure)
             logger.info(
                 "Exposure confirmed: %s affects %s %s",
                 record.cve_id,

@@ -1,0 +1,50 @@
+ci_cd:pip:
+- pip
+- pip3
+- python-pip
+- pypa/pip
+- pypa pip
+ci_cd:setuptools:
+- setuptools
+- pkg_resources
+- easy_install
+- distribute
+libraries:anthropic:
+- anthropic
+- anthropic-sdk
+- anthropic-python
+- '@anthropic-ai/sdk'
+libraries:apscheduler:
+- apscheduler
+- advanced python scheduler
+libraries:certifi:
+- certifi
+- python-certifi
+- certifi-python
+libraries:feedparser:
+- feedparser
+- python-feedparser
+- universal feed parser
+libraries:pgvector:
+- pgvector
+- pg_vector
+- ankane/pgvector
+libraries:psycopg2:
+- psycopg2
+- psycopg2-binary
+- psycopg2-wheels
+libraries:pyyaml:
+- pyyaml
+- py-yaml
+- yaml
+- python-yaml
+libraries:rich:
+- rich
+- rich-library
+- textualize-rich
+libraries:slack_sdk:
+- slack_sdk
+- slack-sdk
+- slack sdk
+- slackclient
+- slack-python-sdk

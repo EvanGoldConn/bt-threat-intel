@@ -15,7 +15,8 @@ CREATE TABLE IF NOT EXISTS threat_records (
     modified_at     TIMESTAMPTZ,
     reference_urls      JSONB,
     raw_data        JSONB,
-    created_at      TIMESTAMPTZ DEFAULT NOW()
+    created_at      TIMESTAMPTZ DEFAULT NOW(),
+    correlated_at   TIMESTAMPTZ
 );
 
 -- Stores vector embeddings for semantic search
@@ -46,7 +47,8 @@ CREATE TABLE IF NOT EXISTS exposure_results (
     asset_version   TEXT,
     is_exposed      BOOLEAN,
     rationale       TEXT,
-    assessed_at     TIMESTAMPTZ DEFAULT NOW()
+    assessed_at     TIMESTAMPTZ DEFAULT NOW(),
+    CONSTRAINT exposure_results_threat_asset_unique UNIQUE (threat_id, asset_name)
 );
 
 -- Stores generated IR playbooks
