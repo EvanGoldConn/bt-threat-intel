@@ -4,7 +4,7 @@ An LLM-backed active threat intelligence platform that monitors public vulnerabi
 correlates findings against a defined asset environment, and surfaces actionable intelligence
 through an analyst chat interface and automated alerting.
 
-Built as a portfolio piece demonstrating threat intelligence engineering, LLM/RAG system
+Built to demonstrate threat intelligence engineering, LLM/RAG system
 design, prompt injection defense, and IR-adjacent tooling.
 
 ---
