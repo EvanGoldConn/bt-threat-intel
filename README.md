@@ -30,11 +30,11 @@ design, prompt injection defense, and IR-adjacent tooling.
 
 **Part 1 — Analyst Chat Interface**
 
-https://github.com/YOUR-USERNAME/bt-threat-intel/raw/main/docs/demo-chat-interface.mp4
+https://github.com/EvanGoldConn/bt-threat-intel/raw/main/docs/demo-chat-interface.mp4
 
 **Part 2 — Ingestion/Correlation Slack Alerts**
 
-https://github.com/YOUR-USERNAME/bt-threat-intel/raw/main/docs/demo-slack-alert.mp4
+https://github.com/EvanGoldConn/bt-threat-intel/raw/main/docs/demo-slack-alert.mp4
 
 ## Architecture
 
