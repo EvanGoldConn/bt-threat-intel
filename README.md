@@ -28,10 +28,6 @@ design, prompt injection defense, and IR-adjacent tooling.
 
 ## Demo
 
-**Diagram**
-
-<img width="1023" height="1254" alt="diagram" src="https://github.com/user-attachments/assets/2994c621-2136-44cc-b3bc-80b009ecf8c9" />
-
 **Part 1 — Analyst Chat Interface**
 
 https://github.com/user-attachments/assets/5ae8e7d6-ac58-436c-8cad-625dddbc0668
@@ -52,7 +48,9 @@ https://github.com/user-attachments/assets/17399155-3ca9-454d-bb0c-849fea49b529
 
 https://github.com/user-attachments/assets/6036b1c5-edf2-47fc-99f6-115bcc053790
 
+**Diagram**
 
+<img width="1023" height="1254" alt="diagram" src="https://github.com/user-attachments/assets/2994c621-2136-44cc-b3bc-80b009ecf8c9" />
 
 ## Architecture
 
