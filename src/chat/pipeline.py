@@ -46,6 +46,19 @@ ENVIRONMENT_INTENT_PHRASES = [
     "supply chain",
     "our pipeline",
     "our ci",
+    "my environment",
+    "my stack",
+    "my infrastructure",
+    "my systems",
+    "my assets",
+    "ir playbook",
+    "incident response",
+    "playbook for",
+    "remediation steps",
+    "what should i do",
+    "what do i do",
+    "how do i fix",
+    "how should i"
 ]
 
 
