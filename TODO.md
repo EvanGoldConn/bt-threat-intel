@@ -57,7 +57,7 @@
 
 ## Future Improvements
 
-### Dependency Scanner (high value portfolio addition)
+### Dependency Scanner (high value, build next)
 - [ ] Build `scripts/scan_dependencies.py` that auto-populates `stack.yaml` libraries section
 - [ ] Parse `requirements.txt` and `pip freeze` output for Python dependencies
 - [ ] Parse `package.json` and `package-lock.json` for Node dependencies
@@ -65,33 +65,91 @@
 - [ ] Parse `Gemfile.lock` for Ruby dependencies
 - [ ] Run scan as a pre-step before correlator to keep stack.yaml current automatically
 - [ ] Flag transitive dependencies separately from direct dependencies in stack.yaml
+- [ ] Auto-detect installed tool versions (Chrome, OpenSSL, curl, git) from the host system
+
+### Conversation History (high value, build next)
+- [ ] Store message history in Streamlit session state
+- [ ] Pass full conversation history to `ChatPipeline.query()` on each turn
+- [ ] Support follow-up queries: "tell me more about the second one", "generate a playbook for that CVE"
+- [ ] Cap history length to avoid context window overflow (rolling window of last N turns)
+
+### REST API Layer (enables enterprise integration)
+- [ ] `api/routes/threats.py` - GET /threats with severity and date filters
+- [ ] `api/routes/chat.py` - POST /chat endpoint wrapping `ChatPipeline.query()`
+- [ ] `api/routes/exposures.py` - GET /exposures returning confirmed exposure_results rows
+- [ ] `api/routes/correlate.py` - POST /correlate to trigger a manual correlation run
+- [ ] Wire routes into `api/main.py`
+- [ ] Add API key auth before any external exposure
+- [ ] Add rate limiting to all endpoints
+- [ ] Enable SIEM, ticketing system, and dashboard integration via REST
+
+### Hybrid Retrieval (improves temporal queries)
+- [ ] Combine similarity search with SQL filters on `published_at` and `severity`
+- [ ] Support temporal queries: "what CVEs came out this week", "what's new since Monday"
+- [ ] Add date range detection to `_classify_intent()` in `chat/pipeline.py`
+- [ ] Add `get_recent_high_severity()` store method with date + severity filters
+
+### Source Array Tracking (improves intelligence quality)
+- [ ] Add `sources` JSONB array column to `threat_records`
+- [ ] During deduplication in `pipeline.py`, accumulate all sources seen for a given CVE
+- [ ] Pass source array to `CveTriage.triage()` as an additional exploitability signal
+- [ ] A CVE seen in NVD + CISA KEV + OTX simultaneously is a hotter signal than NVD alone
+
+### Sigma Rule Generation (high wow factor, immediately actionable)
+- [ ] Add `src/analysis/sigma_generator.py` - generate a Sigma detection rule per confirmed exposure
+- [ ] Prompt takes ThreatRecord + ExposureResult, outputs a valid Sigma YAML rule
+- [ ] Call from `run_correlator.py` / `run_pipeline.py` after playbook generation
+- [ ] Store generated rules in a new `sigma_rules` table or as files in `data/sigma/`
+- [ ] Gives analysts something they can immediately drop into their SIEM
+
+### Trend Analysis (turns tool from reactive to predictive)
+- [ ] Track CVE volume per asset over time using `published_at` from `threat_records`
+- [ ] Add `scripts/run_trends.py` that queries exposure history and surfaces anomalies
+- [ ] Surface in chat: "Are there more Chrome CVEs this month than last month?"
+- [ ] Add a trends endpoint to the REST API
+
+### Multi-Environment Support (enterprise-ready)
+- [ ] Support multiple `stack.yaml` files, one per environment (prod, staging, dev)
+- [ ] Each environment gets its own correlation run and its own `exposure_results` partition
+- [ ] Add `environment` field to `exposure_results` table
+- [ ] Chat pipeline routes queries to the correct environment's exposure set
+
+### Live Network Scan Integration
+- [ ] Connect to the separate recon project to auto-populate `stack.yaml`
+- [ ] Replace manual asset version entry with live scan results
+- [ ] Trigger re-correlation automatically when scan results change
+- [ ] Ties the two portfolio projects together into a single pipeline
+
+### Scheduled Re-correlation on Stack Changes
+- [ ] Add hash check on `stack.yaml` at scheduler startup
+- [ ] If hash has changed since last run, automatically call `recorrelate.py` before pipeline
+- [ ] Removes the last remaining manual operational step
+- [ ] Store last-seen stack hash in a config file or DB table
 
 ### Correlator Improvements
 - [ ] Track all sources a CVE was seen in via a JSONB array on `threat_records`
 - [ ] Pass source array to triage prompt as additional exploitability signal
 - [ ] Add index on `threat_records.cvss_score` to speed up `get_records_for_correlation()` query
-- [ ] Add index on `threat_records.raw_data` for JSON key lookups to speed up CPE queries
+- [ ] Add GIN index on `threat_records.raw_data` for JSON key lookups to speed up CPE queries
 
 ### Analysis Improvements
 - [ ] Migrate triage results from `raw_data` JSONB keys to proper columns if triage becomes a first-class query target
 - [ ] Source tracking: pass all sources a CVE was seen in to triage as an exploitability signal
 
 ### RAG and Chat Improvements
-- [ ] Conversation history support in `ChatPipeline` for multi-turn analyst sessions
-- [ ] Hybrid retrieval mode: combine similarity search with SQL filters on `severity` and `published_at` for temporal queries
 - [ ] Embedding-time content screening for instruction-like patterns in ingested descriptions
 - [ ] Log retrieved chunks alongside each query for retrieval observability
 - [ ] Output validation pass to detect anomalous LLM responses
-
-### API Layer (future)
-- [ ] `api/routes/threats.py` - GET /threats with severity and date filters
-- [ ] `api/routes/chat.py` - POST /chat endpoint wrapping `ChatPipeline.query()`
-- [ ] `api/routes/alerts.py` - POST /correlate to trigger a manual correlation run, GET /exposures
-- [ ] Wire routes into `api/main.py`
-- [ ] Add API key auth before any external exposure
-- [ ] Add rate limiting to all endpoints
 
 ### Security Hardening
 - [ ] Audit all external data paths for prompt injection surface area
 - [ ] Add rate limiting to FastAPI endpoints before any external exposure
 - [ ] Add API key auth to FastAPI endpoints before any external exposure
+
+### Testing
+- [ ] Unit tests for feed normalization (one test per feed, covers happy path and missing fields)
+- [ ] Unit tests for correlator alias matching and CPE parsing
+- [ ] Unit tests for alias_generator validation logic
+- [ ] Unit tests for chat pipeline intent classification and retrieval path routing
+- [ ] Integration test for full ingestion to alert pipeline end to end
+- [ ] Integration test for correlator against a known CVE and known asset
